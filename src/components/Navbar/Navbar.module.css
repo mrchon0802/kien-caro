@@ -1,6 +1,7 @@
 .navbar {
   height: 70px;
-  width: min(calc(100vh - 100px), 95vw);
+  width: min(1000px, 95vw);
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -12,48 +13,114 @@
 
 .logo {
   font-size: 30px;
-
   font-weight: 700;
-
   color: #111;
+
+  white-space: nowrap;
 }
 
 .players {
   display: flex;
-
   align-items: center;
-
   gap: 40px;
 }
 
 .player {
   display: flex;
-
   align-items: center;
-
   gap: 10px;
 
   font-size: 18px;
-
   font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.symbolX,
+.symbolO {
+  font-size: 22px;
 }
 
 .symbolX {
   color: #dc2626;
-
-  font-size: 22px;
 }
 
 .symbolO {
   color: #2563eb;
-
-  font-size: 22px;
 }
 
 .score {
   font-size: 18px;
-
-  background: white;
-
   color: black;
+}
+
+/* ================= Tablet ================= */
+
+@media (max-width: 768px) {
+  .navbar {
+    height: 60px;
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-size: 24px;
+  }
+
+  .players {
+    gap: 20px;
+  }
+
+  .player {
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .symbolX,
+  .symbolO {
+    font-size: 18px;
+  }
+
+  .score {
+    font-size: 16px;
+  }
+}
+
+/* ================= Mobile ================= */
+
+@media (max-width: 480px) {
+  .navbar {
+    height: auto;
+
+    padding: 12px 16px;
+
+    flex-direction: column;
+
+    gap: 12px;
+  }
+
+  .logo {
+    font-size: 22px;
+  }
+
+  .players {
+    width: 100%;
+
+    justify-content: space-between;
+
+    gap: 0;
+  }
+
+  .player {
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  .symbolX,
+  .symbolO {
+    font-size: 16px;
+  }
+
+  .score {
+    font-size: 14px;
+  }
 }
