@@ -1,0 +1,59 @@
+.navbar {
+  height: 70px;
+  width: min(calc(100vh - 100px), 95vw);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 40px;
+
+  background: white;
+}
+
+.logo {
+  font-size: 30px;
+
+  font-weight: 700;
+
+  color: #111;
+}
+
+.players {
+  display: flex;
+
+  align-items: center;
+
+  gap: 40px;
+}
+
+.player {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  font-size: 18px;
+
+  font-weight: 600;
+}
+
+.symbolX {
+  color: #dc2626;
+
+  font-size: 22px;
+}
+
+.symbolO {
+  color: #2563eb;
+
+  font-size: 22px;
+}
+
+.score {
+  font-size: 18px;
+
+  background: white;
+
+  color: black;
+}

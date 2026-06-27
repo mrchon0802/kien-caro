@@ -1,0 +1,138 @@
+.boardWrapper {
+  /* Chừa khoảng cho Navbar */
+  width: min(calc(100vh - 100px), 95vw);
+  height: min(calc(100vh - 100px), 95vw);
+
+  margin: 20px auto;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 2px solid #000;
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+
+  overflow: hidden;
+}
+
+.boardGrid {
+  display: grid;
+
+  width: 100%;
+  height: 100%;
+
+  position: relative;
+
+  background: #ffffff;
+
+  background-image:
+    linear-gradient(to right, #000 1px, transparent 1px),
+    linear-gradient(to bottom, #000 1px, transparent 1px);
+
+  touch-action: manipulation;
+}
+
+.boardCell {
+  position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 0;
+  margin: 0;
+
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  transition: background 0.15s;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.boardCell:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.boardCell:disabled {
+  cursor: default;
+}
+
+.boardCell:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  z-index: 10;
+}
+
+.boardCellWin {
+  background: rgba(255, 215, 0, 0.35);
+}
+
+.symbol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: clamp(1rem, 2vw, 2rem);
+
+  font-weight: 700;
+
+  line-height: 1;
+
+  user-select: none;
+
+  pointer-events: none;
+}
+
+.symbolX {
+  color: #dc2626;
+}
+
+.symbolO {
+  color: #2563eb;
+}
+
+.previewSymbol {
+  position: absolute;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: clamp(1rem, 2vw, 2rem);
+
+  font-weight: 700;
+
+  opacity: 0.35;
+
+  pointer-events: none;
+
+  user-select: none;
+}
+
+.previewSymbolX {
+  color: #dc2626;
+}
+
+.previewSymbolO {
+  color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .boardWrapper {
+    width: min(calc(100vh - 80px), 98vw);
+
+    height: min(calc(100vh - 80px), 98vw);
+
+    margin: 10px auto;
+
+    border-width: 1px;
+  }
+}
