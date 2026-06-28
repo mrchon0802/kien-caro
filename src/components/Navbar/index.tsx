@@ -8,8 +8,7 @@ export default function Navbar({ roomId, playerX, playerO }: NavbarProps) {
   return (
     <header className={styles.navbar}>
       <div className={styles.logo}>
-        Kiến Caro
-        <span className={styles.roomId}>#{roomId}</span>
+        <span className={styles.roomId}>ID: #{roomId}</span>
       </div>
 
       <div className={styles.players}>
