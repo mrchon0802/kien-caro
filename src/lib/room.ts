@@ -58,7 +58,12 @@ function fromRaw(raw: RawRoomState): RoomState {
   return {
     ...raw,
     board: JSON.parse(raw.board),
+    winner: raw.winner ?? null,
     winningCells: raw.winningCells ? JSON.parse(raw.winningCells) : [],
+    players: {
+      X: { ...raw.players.X, name: raw.players.X?.name ?? null },
+      O: { ...raw.players.O, name: raw.players.O?.name ?? null },
+    },
   };
 }
 
