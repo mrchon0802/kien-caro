@@ -107,6 +107,7 @@ export default function RoomPage() {
       }}
     >
       <Navbar
+        roomId={roomId}
         playerX={{
           symbol: "X",
           name: room.players.X.name,

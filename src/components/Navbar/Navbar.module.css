@@ -19,6 +19,14 @@
   white-space: nowrap;
 }
 
+.roomId {
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #999;
+  vertical-align: middle;
+}
+
 .players {
   display: flex;
   align-items: center;
@@ -52,6 +60,13 @@
 .score {
   font-size: 18px;
   color: black;
+}
+
+.onlineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
 /* ================= Tablet ================= */

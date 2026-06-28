@@ -4,9 +4,14 @@ import styles from "./Navbar.module.css";
 import PlayerInfo from "./PlayerInfo";
 import type { NavbarProps } from "./types";
 
-export default function Navbar({ playerX, playerO }: NavbarProps) {
+export default function Navbar({ roomId, playerX, playerO }: NavbarProps) {
   return (
     <header className={styles.navbar}>
+      <div className={styles.logo}>
+        Kiến Caro
+        <span className={styles.roomId}>#{roomId}</span>
+      </div>
+
       <div className={styles.players}>
         <PlayerInfo player={playerX} />
 

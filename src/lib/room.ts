@@ -241,3 +241,42 @@ export function listenToRoom(
     callback(fromRaw(snapshot.val() as RawRoomState));
   });
 }
+
+export interface OpenRoomSummary {
+  roomId: string;
+  hostName: string | null;
+  createdAt: number;
+}
+
+/**
+ * Lắng nghe danh sách các phòng đang "mở" — chỉ có người tạo (X) đã vào,
+ * chưa có người thứ 2 (O) join. Dùng cho trang chủ để người chơi chọn vào
+ * phòng có sẵn thay vì tạo phòng mới (tránh trường hợp 2 người cùng tạo
+ * 2 phòng riêng mà không gặp được nhau).
+ *
+ * Lưu ý: cách này đọc toàn bộ node `rooms` mỗi lần — chỉ phù hợp ở quy mô
+ * nhỏ (vài chục/trăm phòng đồng thời). Nếu lớn hơn cần đánh index riêng.
+ */
+export function listenToOpenRooms(
+  callback: (rooms: OpenRoomSummary[]) => void,
+): Unsubscribe {
+  const roomsRef = ref(db, "rooms");
+  return onValue(roomsRef, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+
+    const all = snapshot.val() as Record<string, RawRoomState>;
+    const open: OpenRoomSummary[] = Object.entries(all)
+      .filter(([, raw]) => raw.players?.X?.joined && !raw.players?.O?.joined)
+      .map(([roomId, raw]) => ({
+        roomId,
+        hostName: raw.players.X.name,
+        createdAt: raw.createdAt,
+      }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    callback(open);
+  });
+}
