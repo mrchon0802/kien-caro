@@ -1,37 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import Board from "@/components/Board/index";
-import Navbar from "@/components/Navbar/index";
-import { createEmptyBoard, placeMove, checkWinAt } from "@/lib/gameLogic";
+import { useRouter } from "next/navigation";
+import { createRoom } from "@/lib/room";
 
 export default function HomePage() {
-  const [board, setBoard] = useState(createEmptyBoard());
+  const router = useRouter();
+  const [creating, setCreating] = useState(false);
 
-  const [currentTurn, setCurrentTurn] = useState<"X" | "O">("X");
-
-  const [winningCells, setWinningCells] = useState<Array<[number, number]>>([]);
-
-  const [gameOver, setGameOver] = useState(false);
-
-  function handleCellClick(row: number, col: number) {
-    if (gameOver) return;
-
-    const newBoard = placeMove(board, row, col, currentTurn);
-
-    if (!newBoard) return;
-
-    setBoard(newBoard);
-
-    const result = checkWinAt(newBoard, row, col);
-
-    if (result) {
-      setWinningCells(result.winningCells);
-      setGameOver(true);
-      return;
-    }
-
-    setCurrentTurn(currentTurn === "X" ? "O" : "X");
+  async function handleCreateRoom() {
+    if (creating) return;
+    setCreating(true);
+    const roomId = await createRoom();
+    // Người tạo luôn là quân X — lưu trước để vào /room/[id] không bị join lại
+    sessionStorage.setItem(`kien-caro:room:${roomId}:symbol`, "X");
+    router.push(`/room/${roomId}`);
   }
 
   return (
@@ -42,34 +25,27 @@ export default function HomePage() {
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
+        gap: 16,
       }}
     >
-      <>
-        <Navbar
-          playerX={{
-            id: "1",
-            name: "Mín",
-            symbol: "X",
-            score: 2,
-            online: true,
-          }}
-          playerO={{
-            id: "2",
-            name: "Chón",
-            symbol: "O",
-            score: 1,
-            online: true,
-          }}
-        />
-        <Board
-          board={board}
-          winningCells={winningCells}
-          mySymbol={currentTurn}
-          currentTurn={currentTurn}
-          isGameOver={gameOver}
-          onCellClick={handleCellClick}
-        />
-      </>
+      <h1 style={{ fontSize: 32, fontWeight: 700 }}>Kiến Caro</h1>
+      <button
+        onClick={handleCreateRoom}
+        disabled={creating}
+        style={{
+          height: 48,
+          padding: "0 28px",
+          borderRadius: 10,
+          border: "none",
+          background: "#111",
+          color: "white",
+          fontWeight: 600,
+          fontSize: 16,
+          cursor: creating ? "not-allowed" : "pointer",
+        }}
+      >
+        {creating ? "Đang tạo..." : "Tạo phòng mới"}
+      </button>
     </main>
   );
 }

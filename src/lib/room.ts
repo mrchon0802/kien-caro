@@ -18,10 +18,16 @@ import {
 
 export type Symbol = "X" | "O";
 
+export interface PlayerSlot {
+  joined: boolean;
+  name: string | null;
+}
+
 export interface RoomState {
   board: Board;
   currentTurn: Symbol;
-  players: { X: boolean; O: boolean };
+  players: { X: PlayerSlot; O: PlayerSlot };
+  score: { X: number; O: number };
   winner: Symbol | "draw" | null;
   winningCells: Array<[number, number]>;
   createdAt: number;
@@ -32,7 +38,8 @@ export interface RoomState {
 interface RawRoomState {
   board: string;
   currentTurn: Symbol;
-  players: { X: boolean; O: boolean };
+  players: { X: PlayerSlot; O: PlayerSlot };
+  score: { X: number; O: number };
   winner: Symbol | "draw" | null;
   winningCells: string;
   createdAt: number;
@@ -62,6 +69,7 @@ export function generateRoomId(): string {
 
 /**
  * Tạo phòng mới, người tạo luôn được gán quân X (đi trước).
+ * Tên người chơi chưa có (null) — sẽ nhập sau qua setPlayerName.
  * Trả về roomId vừa tạo.
  */
 export async function createRoom(): Promise<string> {
@@ -69,7 +77,11 @@ export async function createRoom(): Promise<string> {
   const initialState: RoomState = {
     board: createEmptyBoard(),
     currentTurn: "X",
-    players: { X: true, O: false },
+    players: {
+      X: { joined: true, name: null },
+      O: { joined: false, name: null },
+    },
+    score: { X: 0, O: 0 },
     winner: null,
     winningCells: [],
     createdAt: Date.now(),
@@ -96,22 +108,22 @@ export async function joinRoom(roomId: string): Promise<Symbol | null> {
 
   const result = await runTransaction(
     roomRef,
-    (players: { X: boolean; O: boolean } | null) => {
+    (players: { X: PlayerSlot; O: PlayerSlot } | null) => {
       if (!players) {
         assignedSymbol = null;
         return players; // phòng không tồn tại -> không sửa gì
       }
-      if (!players.X) {
+      if (!players.X.joined) {
         assignedSymbol = "X";
-        return { ...players, X: true };
+        return { ...players, X: { ...players.X, joined: true } };
       }
-      if (!players.O) {
+      if (!players.O.joined) {
         assignedSymbol = "O";
-        return { ...players, O: true };
+        return { ...players, O: { ...players.O, joined: true } };
       }
       assignedSymbol = null; // phòng đã đầy
       return players;
-    }
+    },
   );
 
   if (!result.committed) return null;
@@ -119,7 +131,23 @@ export async function joinRoom(roomId: string): Promise<Symbol | null> {
 }
 
 /**
+ * Đặt/đổi tên cho 1 người chơi trong phòng. Gọi sau khi đã được gán symbol
+ * (qua createRoom hoặc joinRoom), trước khi ván cờ bắt đầu.
+ */
+export async function setPlayerName(
+  roomId: string,
+  symbol: Symbol,
+  name: string,
+): Promise<void> {
+  await update(ref(db, `rooms/${roomId}/players/${symbol}`), {
+    name: name.trim().slice(0, 20),
+  });
+}
+
+/**
  * Đánh 1 quân vào phòng. Đọc board mới nhất, kiểm tra hợp lệ, ghi lại.
+ * Nếu có người thắng, cộng điểm (+1) ngay trong transaction để tránh
+ * mất đồng bộ. Hoà thì không cộng điểm cho ai.
  * Dùng transaction trên toàn bộ room để tránh 2 người đánh cùng lúc gây
  * mất đồng bộ (vd: mạng chậm, cả 2 click gần như đồng thời).
  */
@@ -127,7 +155,7 @@ export async function makeMove(
   roomId: string,
   row: number,
   col: number,
-  player: Symbol
+  player: Symbol,
 ): Promise<{ success: boolean; reason?: string }> {
   const roomRef = ref(db, `rooms/${roomId}`);
 
@@ -146,6 +174,10 @@ export async function makeMove(
       resultReason = "Chưa đến lượt bạn";
       return raw;
     }
+    if (!raw.players.X.name || !raw.players.O.name) {
+      resultReason = "Chưa đủ 2 người chơi nhập tên";
+      return raw;
+    }
 
     const board: Board = JSON.parse(raw.board);
     const newBoard = placeMove(board, row, col, player);
@@ -157,10 +189,16 @@ export async function makeMove(
     const winResult = checkWinAt(newBoard, row, col);
     const draw = !winResult && isBoardFull(newBoard);
 
+    const score = { ...raw.score };
+    if (winResult) {
+      score[winResult.winner] = (score[winResult.winner] ?? 0) + 1;
+    }
+
     return {
       ...raw,
       board: JSON.stringify(newBoard),
       currentTurn: player === "X" ? "O" : "X",
+      score,
       winner: winResult ? winResult.winner : draw ? "draw" : null,
       winningCells: winResult ? JSON.stringify(winResult.winningCells) : "",
       lastMoveAt: Date.now(),
@@ -173,7 +211,9 @@ export async function makeMove(
   return { success: true };
 }
 
-/** Reset bàn cờ để chơi ván mới, giữ nguyên 2 người chơi trong phòng */
+/**
+ * Reset bàn cờ để chơi ván mới, giữ nguyên 2 người chơi và score trong phòng.
+ */
 export async function resetRoom(roomId: string): Promise<void> {
   await update(ref(db, `rooms/${roomId}`), {
     board: JSON.stringify(createEmptyBoard()),
@@ -190,7 +230,7 @@ export async function resetRoom(roomId: string): Promise<void> {
  */
 export function listenToRoom(
   roomId: string,
-  callback: (state: RoomState | null) => void
+  callback: (state: RoomState | null) => void,
 ): Unsubscribe {
   const roomRef = ref(db, `rooms/${roomId}`);
   return onValue(roomRef, (snapshot) => {

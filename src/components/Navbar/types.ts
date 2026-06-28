@@ -1,8 +1,7 @@
 export type Symbol = "X" | "O";
 
 export interface Player {
-  id: string;
-  name: string;
+  name: string | null;
   symbol: Symbol;
   score: number;
   online: boolean;
